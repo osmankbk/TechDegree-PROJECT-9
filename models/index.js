@@ -35,6 +35,8 @@ Object.keys(db).forEach(modelName => {
   try {
     await sequelize.authenticate();
     console.log('Connection to the database was a success');
+    console.log('synchronizing the models with the database');
+    await sequelize.sync();
   } catch(error) {
     console.error('Error connection to the database', error);
   }

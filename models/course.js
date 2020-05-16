@@ -8,9 +8,6 @@ module.exports = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        userId: {
-            type: Sequelize.INTEGER
-        },
         title: Sequelize.STRING,
         description: Sequelize.TEXT,
         estimatedTime: {
@@ -23,7 +20,12 @@ module.exports = (sequelize) => {
         },
     }, {sequelize});
     Course.associate = (models) => {
-        Course.belongsTo(models.User);
-    }
+        Course.belongsTo(models.User, {
+            foreignKey: {
+                fieldName: 'userId',
+                allowNull: false,
+            },
+        });
+    };
     return Course;
 }
