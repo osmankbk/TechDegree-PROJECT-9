@@ -5,6 +5,8 @@ const express = require('express');
 const morgan = require('morgan');
 const { sequelize } = require('./models');
 const routes = require('./routes/users.js');
+const routess = require('./routes/courses.js');
+
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -24,6 +26,7 @@ app.get('/', (req, res) => {
 
 // TODO setup your api routes here
 app.use('/api', routes);
+app.use('/api', routess);
 
 // send 404 if no other route matched
 app.use((req, res) => {
