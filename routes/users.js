@@ -3,7 +3,7 @@ const auth = require('basic-auth');
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
-const { User } = require('../models');
+const { User, Course } = require('../models');
 const { Op } = require('sequelize');
 
 //DRY async func

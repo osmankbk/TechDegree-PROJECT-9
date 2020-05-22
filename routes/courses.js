@@ -3,7 +3,7 @@ const auth = require('basic-auth');
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
-const { Course } = require('../models');
+const { Course, User } = require('../models');
 const { Op } = require('sequelize');
 
 //DRY async func
@@ -20,7 +20,7 @@ const asyncEnvelop = (cb) => {
 }
 
 //Authenticate users
-const authenticateUser = async(req, res, nex) => {
+const authenticateUser = async(req, res, next) => {
     let message = null;
     try {
         const credentials = auth(req);
@@ -34,7 +34,7 @@ const authenticateUser = async(req, res, nex) => {
             });
             if(user){
                 const authenticated = bcryptjs
-                .compareSync(credentials.pass, user.password);
+                    .compareSync(credentials.pass, user.password);
                 if(authenticated){
                     console.log(`Authentication successful for username ${user.emailAddress}`)
                     req.currentUser = user;
@@ -60,13 +60,26 @@ const authenticateUser = async(req, res, nex) => {
 
 //Get courses
 router.get('/courses', asyncEnvelop(async(req, res) =>{
-    const course = await Course.findAll();
-    res.status(200).json(course);
+    try {
+        const course = await Course.findAll({
+            include: [{
+                model: User,
+            }],
+        });
+        res.status(200).json(course);
+    } catch(err) {
+        console.log({error: err});
+    }
+    
 }));
 
 //Get A course
-router.get('/courses/:id', authenticateUser, asyncEnvelop(async(req, res) =>{
-    const course = await Course.findByPk(req.params.id);
+router.get('/courses/:id', asyncEnvelop(async(req, res) =>{
+    const course = await Course.findByPk(req.params.id, {
+        include: [{
+            model: User,
+        }],
+    });
     if(course) {
         res.status(200).json(course);
     } else {
