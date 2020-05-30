@@ -10,8 +10,14 @@ module.exports = (sequelize) => {
         },
         title: Sequelize.STRING,
         description: Sequelize.TEXT,
-        estimatedTime: Sequelize.STRING,
-        materialsNeeded: Sequelize.STRING,
+        estimatedTime: {
+            type: Sequelize.STRING,
+            allowNull: true,
+        },
+        materialsNeeded: {
+            type: Sequelize.STRING,
+            allowNull: true,
+        },
     }, {sequelize});
     Course.associate = (models) => {
         Course.belongsTo(models.User, {

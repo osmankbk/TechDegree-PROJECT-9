@@ -104,7 +104,7 @@ router.post('/courses', authenticateUser, [
             res.status(400).json({errors: errorMessage});
         } else {
             const course = await Course.create(req.body);
-            res.status(201).end();
+            res.status(201).location(`/courses/${course.id}`).end();
         }
     } catch(error) {
         console.log({error: error.message});
@@ -119,13 +119,7 @@ router.put('/courses/:id', authenticateUser, [
     .withMessage('A title is required'),
     check('description')
     .exists({checkNull: true, checkFalsy: true})
-    .withMessage('A description is required'),
-    check('estimatedTime')
-    .exists({checkNull: true, checkFalsy: true})
-    .withMessage('An estimated time is required'),
-    check('materialsNeeded')
-    .exists({checkNull: true, checkFalsy: true})
-    .withMessage('A list of materials is required')
+    .withMessage('A description is required')
 ], asyncEnvelop(async(req, res) =>{
     try {
         const errors = validationResult(req);
@@ -135,8 +129,12 @@ router.put('/courses/:id', authenticateUser, [
             res.status(400).json({errors: errorMessage});
         } else {
         if(course) {
-            course = course.update(req.body);
-            res.status(201).end();
+            if(course.userId === req.currentUser.id) {
+                course = course.update(req.body);
+                res.status(201).end();
+            } else {
+                res.status(403).json({'error': 'Sorry, you need to own the course to make changes'});
+            }
         } else {
             res.status(404).json({'error': 'course not available'});
         }
@@ -152,8 +150,13 @@ router.delete('/courses/:id', authenticateUser,  asyncEnvelop(async(req, res) =>
     try {
         const course = await Course.findByPk(req.params.id);
         if(course) {
-            await course.destroy();
-            res.status(204).end();
+            if(course.userId === req.currentUser.id){
+                await course.destroy();
+                res.status(204).end();
+            } else {
+                res.status(403).json({'error': 'Sorry, you need to own the course to make changes'})
+            }
+           
         } else {
             res.status(404).json({'error': 'course not available'});
         }

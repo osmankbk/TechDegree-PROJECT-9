@@ -72,12 +72,27 @@ router.post('/users', [
     check('lastName')
     .exists({checkNull: true, checkFalsy: true})
     .withMessage('A last name is required'),
-    check('emailAddress')
-    .exists({checkNull: true, checkFalsy: true})
-    .withMessage('An e-mail address is required'),
     check('password')
     .exists({checkNull: true, checkFalsy: true})
-    .withMessage('A password is required')
+    .withMessage('A password is required'),
+    check('emailAddress')
+    .exists({checkNull: true, checkFalsy: true})
+    .withMessage('An e-mail address is required')
+    .isEmail()
+    .withMessage('Please enter a valid emailAddress')
+    .custom(email => {
+        return User.findOne({
+            where: {
+                emailAddress: {
+                    [Op.eq]: email,
+                },
+            },
+        }).then(e => {
+            if (e) {
+                return Promise.reject('This emailAddress is already taken');
+            }
+        })
+    })
 ], asyncEnvelop(async(req, res) => {
     const errors = validationResult(req);
     let user = req.body;
