@@ -1,3 +1,5 @@
+//My user model
+
 const Sequelize = require('sequelize');
 
 module.exports = (sequelize) => {

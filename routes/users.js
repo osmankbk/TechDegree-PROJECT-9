@@ -1,9 +1,8 @@
-const bcryptjs = require('bcryptjs');
-const auth = require('basic-auth');
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
-const { User, Course } = require('../models');
+const { User } = require('../models');
+const authenticateUser = require('../middleware/authenticateUser');
 const { Op } = require('sequelize');
 
 //DRY async func
@@ -19,49 +18,12 @@ const asyncEnvelop = (cb) => {
     }
 }
 
-//Authenticate users
-const authenticateUser = async(req, res, next) => {
-    let message = null;
-    try {
-        const credentials = auth(req);
-        if(credentials){
-            const user = await User.findOne({
-                where:{
-                    emailAddress: {
-                        [Op.eq]: credentials.name
-                    }
-                }
-            });
-            if(user){
-                const authenticated = bcryptjs
-                .compareSync(credentials.pass, user.password);
-                if(authenticated){
-                    console.log(`Authentication successful for username ${user.emailAddress}`)
-                    req.currentUser = user;
-                } else {
-                    message = `Authentication failure for username ${user.emailAddress}`;
-                }
-            } else {
-                message = `User not found for username ${credentials.name}`;
-            }
-        } else {
-            message = `Auth header not found`;
-        }
-        if(message){
-            console.warn(message);
-            res.status(401).json({message: 'Access Denied'});
-        } else {
-            next();
-        }
-    } catch(error){
-        console.log({error: error.message});
-    }
-    
-}
 //Get users
 router.get('/users', authenticateUser, asyncEnvelop(async(req, res) =>{
         const user = req.currentUser;
-        const users = await User.findByPk(user.id);
+        const users = await User.findByPk(user.id, {
+             attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+        });
         res.status(200).json(users);
 }));
 //Post Users

@@ -1,12 +1,11 @@
-const bcryptjs = require('bcryptjs');
-const auth = require('basic-auth');
 const express = require('express');
 const router = express.Router();
 const { check, validationResult } = require('express-validator/check');
 const { Course, User } = require('../models');
+const authenticateUser = require('../middleware/authenticateUser');
 const { Op } = require('sequelize');
 
-//DRY async func
+//DRY async function
 const asyncEnvelop = (cb) => {
     return async (req, res, next) =>{
         try {
@@ -19,50 +18,13 @@ const asyncEnvelop = (cb) => {
     }
 }
 
-//Authenticate users
-const authenticateUser = async(req, res, next) => {
-    let message = null;
-    try {
-        const credentials = auth(req);
-        if(credentials){
-            const user = await User.findOne({
-                where: {
-                    emailAddress: {
-                        [Op.eq]: credentials.name
-                    }
-                }
-            });
-            if(user){
-                const authenticated = bcryptjs
-                    .compareSync(credentials.pass, user.password);
-                if(authenticated){
-                    console.log(`Authentication successful for username ${user.emailAddress}`)
-                    req.currentUser = user;
-                } else {
-                    message = `Authentication failure for username ${credentials.username}`;
-                }
-            } else {
-                message = `User not found for username ${user.emailAddress}`;
-            }
-        } else {
-            message = `Auth header not found`;
-        }
-        if(message){
-            console.warn(message);
-            res.status(401).json({message: 'Access Denied'});
-        } else {
-            next();
-        }
-    } catch(error) {
-        console.log({error: error.message});
-    }
-}
-
 //Get courses
 router.get('/courses', asyncEnvelop(async(req, res) =>{
     try {
         const course = await Course.findAll({
+            attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
             include: [{
+                attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
                 model: User,
             }],
         });
@@ -76,8 +38,10 @@ router.get('/courses', asyncEnvelop(async(req, res) =>{
 //Get A course
 router.get('/courses/:id', asyncEnvelop(async(req, res) =>{
     const course = await Course.findByPk(req.params.id, {
+        attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
         include: [{
-            model: User,
+            attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
+            model: User
         }],
     });
     if(course) {

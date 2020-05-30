@@ -1,3 +1,13 @@
+/******************************************
+Treehouse Techdegree:
+FSJS project 9 - REST API
+******************************************/
+
+//Title: Treehouse Project 9
+//Project: REST API
+//Goal: exceed expectation
+
+
 'use strict';
 
 // load modules
