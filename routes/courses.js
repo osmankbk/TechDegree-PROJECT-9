@@ -95,7 +95,7 @@ router.put('/courses/:id', authenticateUser, [
         if(course) {
             if(course.userId === req.currentUser.id) {
                 course = course.update(req.body);
-                res.status(201).end();
+                res.status(204).end();
             } else {
                 res.status(403).json({'error': 'Sorry, you need to own the course to make changes'});
             }

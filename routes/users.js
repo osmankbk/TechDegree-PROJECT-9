@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const bcryptjs = require('bcryptjs');
 const { check, validationResult } = require('express-validator/check');
 const { User } = require('../models');
 const authenticateUser = require('../middleware/authenticateUser');
@@ -13,7 +14,7 @@ const asyncEnvelop = (cb) => {
             
         } catch(err) {
             res.status(500).send(err.log);
-            console.log(err.status);
+            console.log({err});
         }
     }
 }
